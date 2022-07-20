@@ -1,8 +1,9 @@
 from databases import Database
 from fastapi import FastAPI, Depends
 from fastapi.responses import ORJSONResponse
-from sqlalchemy import select
+from sqlalchemy import select, insert
 
+from api.v1 import products
 from core import db
 from core.config import Settings
 from core.db import db_init, get_pg
@@ -64,14 +65,23 @@ async def shutdown():
 #     await grpc_init.grpc_auth.close()
 #
 
-# app.include_router(films.router, prefix='/api/v1/films')
+app.include_router(products.router, prefix='/api/v1/products')
 # app.include_router(persons.router, prefix='/api/v1/persons')
 # app.include_router(genres.router, prefix='/api/v1/genres')
-@app.get("/")
-async def root(db: Database = Depends(get_pg)):
-    print(db)
-    print(Price)
-    query = select(Product)
-    res = await db.fetch_all(query)
-    print(res[0].id)
-    return {"message": "Hello World1"}
+# @app.get("/")
+# async def root(db: Database = Depends(get_pg)):
+#     print(db)
+#     print(Price)
+#     query = select(Product)
+#     res = await db.fetch_all(query)
+#     print(list(res[0].keys()))
+#     print(list(res[0].values()))
+#     price = Price()
+#     price.id='f0508592-262e-425b-b1cd-57828ebd98c4'
+#     price.stripe_product_id='f0508592-262e-425b-b1cd-57828ebd97c4'
+#     price.name='tttttt'
+#     price.description='tttttt'
+#     print(insert(Price))
+#     # db.execute(insert(price))
+#     # prod = Product(id=)
+#     return {"message": "Hello World1"}
