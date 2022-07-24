@@ -5,7 +5,7 @@ from functools import lru_cache
 import stripe
 from databases import Database
 from fastapi import Depends
-from sqlalchemy import select, insert, update, delete
+from sqlalchemy import select, insert, update, delete, and_
 
 from core.config import Settings
 from core.db import get_pg
@@ -20,7 +20,7 @@ class ProductService:
         self.db = db
 
     async def get_all(self):
-        query = select(Product_sql)
+        query = select(Product_sql).where(Product_sql.active==True)
         result = await self.db.fetch_all(query)
         products = None
         if result:
@@ -30,7 +30,8 @@ class ProductService:
                 name=item.name,
                 description=item.description,
                 created_at=item.created_at,
-                updated_at=item.updated_at
+                updated_at=item.updated_at,
+                active=item.active
             ) for item in result]
         return products
 
@@ -45,12 +46,13 @@ class ProductService:
                 name=result.name,
                 description=result.description,
                 created_at=result.created_at,
-                updated_at=result.updated_at
+                updated_at=result.updated_at,
+                active=result.active
             )
         return product
 
     async def check_product(self, name):
-        query = select(Product_sql).where(Product_sql.name == name)
+        query = select(Product_sql).filter(and_(Product_sql.name == name, Product_sql.active == True))
         result = await self.db.fetch_one(query)
         return result
 
@@ -66,7 +68,8 @@ class ProductService:
             name=product_new.name,
             description=product_new.description,
             created_at=datetime.fromtimestamp(product_new.created),
-            updated_at=datetime.fromtimestamp(product_new.updated)
+            updated_at=datetime.fromtimestamp(product_new.updated),
+            active=product_new.active
         )
         query = insert(Product_sql).values(**product.dict())
         await self.db.execute(query)
@@ -87,8 +90,11 @@ class ProductService:
     async def delete(self, uuid):
         product_old = await self.get_one(uuid)
         stripe.api_key = settings.stripe_key
-        stripe.Product.delete(product_old.stripe_product_id)
-        query = delete(Product_sql).where(Product_sql.id == uuid)
+        result = stripe.Product.modify(
+            product_old.stripe_product_id,
+            active=False,
+        )
+        query = update(Product_sql).where(Product_sql.id == uuid).values(active=False)
         await self.db.execute(query)
 
 
