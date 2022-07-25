@@ -1,8 +1,8 @@
 """init
 
-Revision ID: db41425b14da
+Revision ID: 032c3baa75f9
 Revises: 
-Create Date: 2022-07-20 17:04:21.255654
+Create Date: 2022-07-22 10:07:34.397011
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'db41425b14da'
+revision = '032c3baa75f9'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,6 +25,7 @@ def upgrade() -> None:
     sa.Column('description', sa.String(length=250), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('active', sa.Boolean(), server_default='true', nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
     )
@@ -38,6 +39,7 @@ def upgrade() -> None:
     op.create_table('price',
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('stripe_product_id', sa.String(length=50), nullable=False),
+    sa.Column('stripe_price_id', sa.String(length=50), nullable=False),
     sa.Column('name', sa.String(length=250), nullable=False),
     sa.Column('active', sa.Boolean(), nullable=True),
     sa.Column('type', sa.String(length=250), nullable=False),
@@ -45,6 +47,9 @@ def upgrade() -> None:
     sa.Column('currency', sa.String(length=250), nullable=False),
     sa.Column('permission_id', postgresql.UUID(), nullable=False),
     sa.Column('product_id', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('interval', sa.String(length=250), nullable=True),
+    sa.Column('interval_count', sa.Integer(), nullable=True),
+    sa.Column('using_type', sa.String(length=250), nullable=True),
     sa.ForeignKeyConstraint(['product_id'], ['product.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')

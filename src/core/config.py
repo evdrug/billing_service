@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     db_postgres_name: str = Field('bill', env='POSTGRES_DB')
 
     stripe_key: str = Field(
-        'sk_test_51LJIvZL2WckhhXcwi3Rj0gpSLpBO9tS1jXaMdYvwWVgzWAqbc4puXZj5xTL4TdK6GfD0hmCmIt4q77sWOm34d9nU00nuX5ZXSd',
+        '',
         env='STRIPE_KEY'
                             )
 

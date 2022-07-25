@@ -12,3 +12,4 @@ class Product(BaseModel):
     description: Optional[str]
     created_at: datetime
     updated_at: datetime
+    active: bool

@@ -23,6 +23,7 @@ class Product(Base):
     description = Column(String(250), nullable=True)
     created_at = Column(DateTime(True))
     updated_at = Column(DateTime(True))
+    active = Column(Boolean, nullable=False, server_default="true")
 
 
 class Price(Base):
@@ -31,6 +32,7 @@ class Price(Base):
     id = Column(UUID(as_uuid=True), primary_key=True,
               default=uuid.uuid4, unique=True, nullable=False)
     stripe_product_id = Column(String(50), nullable=False)
+    stripe_price_id = Column(String(50), nullable=False)
     name = Column(String(250), nullable=False)
     active = Column(Boolean)
     type = Column(String(250), nullable=False)
@@ -38,6 +40,9 @@ class Price(Base):
     currency = Column(String(250), nullable=False)
     permission_id = Column(UUID, nullable=False)
     product_id = Column(ForeignKey('product.id'), nullable=False)
+    interval = Column(String(250), nullable=True)
+    interval_count = Column(Integer, nullable=True)
+    using_type = Column(String(250), nullable=True)
 
 
 class StripeCustomer(Base):
