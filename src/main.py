@@ -3,7 +3,7 @@ from fastapi import FastAPI, Depends
 from fastapi.responses import ORJSONResponse
 from sqlalchemy import select, insert
 
-from api.v1 import products
+from api.v1 import products, admin
 from core import db
 from core.config import Settings
 from core.db import db_init, get_pg
@@ -66,6 +66,7 @@ async def shutdown():
 #
 
 app.include_router(products.router, prefix='/api/v1/products')
+app.include_router(admin.router, prefix='/api/v1/admin')
 # app.include_router(persons.router, prefix='/api/v1/persons')
 # app.include_router(genres.router, prefix='/api/v1/genres')
 # @app.get("/")
