@@ -14,6 +14,7 @@ from models.prices import TypePrice, Price, TypeRecurring
 from services.products_service import ProductService, get_products_service
 
 settings = Settings()
+stripe.api_key = settings.stripe_key
 
 
 class PriceService:

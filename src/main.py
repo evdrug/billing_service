@@ -1,8 +1,12 @@
+import uvicorn
 from databases import Database
 from fastapi import FastAPI, Depends
 from fastapi.responses import ORJSONResponse
 from sqlalchemy import select, insert
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
+from api.v1 import products, subscription
 from api.v1 import products, prices
 from core import db
 from core.config import Settings
@@ -35,36 +39,6 @@ async def shutdown():
     await db.pg.disconnect()
 
 
-#
-# @app.on_event('startup')
-# async def startup():
-#     # Подключаемся к базам при старте сервера
-#     # Подключиться можем при работающем event-loop
-#     # Поэтому логика подключения происходит в асинхронной функции
-#     redis.redis = aioredis.from_url(
-#         f'redis://{config.REDIS_HOST}:{config.REDIS_PORT}'
-#     )
-#     elastic.es = AsyncElasticsearch(
-#         hosts=[f'http://{config.ELASTIC_HOST}:{config.ELASTIC_PORT}'],
-#         http_auth=(
-#             config.ELASTIC_USER,
-#             config.ELASTIC_PASSWORD
-#         )
-#     )
-#
-#     grpc_init.grpc_auth = grpc.aio.insecure_channel(
-#         f'{config.AUTH_GRPC_HOST}:{config.AUTH_GRPC_PORT}'
-#     )
-#
-#
-# @app.on_event('shutdown')
-# async def shutdown():
-#     # Отключаемся от баз при выключении сервера
-#     await redis.redis.close()
-#     await elastic.es.close()
-#     await grpc_init.grpc_auth.close()
-#
-
 app.include_router(products.router, prefix='/api/v1/products')
 app.include_router(prices.router, prefix='/api/v1/prices')
 # app.include_router(genres.router, prefix='/api/v1/genres')
@@ -85,3 +59,13 @@ app.include_router(prices.router, prefix='/api/v1/prices')
 #     # db.execute(insert(price))
 #     # prod = Product(id=)
 #     return {"message": "Hello World1"}
+app.include_router(subscription.router, prefix='/api/v1/subscription')
+app.mount("/static", StaticFiles(directory=subscription.static_dir), name="static")
+
+
+if __name__ == '__main__':
+    uvicorn.run(
+        'main:app',
+        host='0.0.0.0',
+        port=8000,
+    )
