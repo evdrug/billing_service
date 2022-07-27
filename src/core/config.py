@@ -8,8 +8,8 @@ from core.logger import LOGGING
 
 class Settings(BaseSettings):
     project_name: str = Field('billing_app', env='PROJECT_NAME')
-    auth_grpc_host: str = Field('auth_grpc', env='AUTH_GRPC_HOST')
-    auth_grpc_port: int = Field(5005, env='AUTH_GRPC_PORT')
+    auth_grpc_host: str = Field('localhost', env='AUTH_GRPC_HOST')
+    auth_grpc_port: int = Field(50051, env='AUTH_GRPC_PORT')
 
     db_postgres_host: str = Field('localhost', env='POSTGRES_HOST')
     db_postgres_user: str = Field('postgres_bill', env='POSTGRES_USER')

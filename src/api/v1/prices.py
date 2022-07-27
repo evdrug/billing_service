@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 
 from models.prices import Price, TypeRecurring, TypePrice
 from services.prices_service import get_price_service, PriceService
+from grpc_auth_client.dependencies import get_permissions
 
 router = APIRouter()
 
@@ -77,7 +78,8 @@ async def create_price(
             tags=['Prices'])
 async def get_price_id(
         uuid: UUID,
-        price_service: PriceService = Depends(get_price_service)
+        price_service: PriceService = Depends(get_price_service),
+        # permissions=Depends(get_permissions)
 ) -> Price:
     price = await price_service.get_one(uuid)
     if not price:
