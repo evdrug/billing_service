@@ -7,6 +7,8 @@ from api.v1 import products, prices
 from core import db
 from core.config import Settings
 from core.db import db_init, get_pg
+from core import stripe_config
+from core.stripe_config import stripe_init
 from db.sql_model import Price, Product
 
 settings = Settings()
@@ -27,6 +29,7 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup():
     db.pg = db_init()
+    stripe_config.stripe_loc = stripe_init()
     await db.pg.connect()
 
 
@@ -67,21 +70,3 @@ async def shutdown():
 
 app.include_router(products.router, prefix='/api/v1/products')
 app.include_router(prices.router, prefix='/api/v1/prices')
-# app.include_router(genres.router, prefix='/api/v1/genres')
-# @app.get("/")
-# async def root(db: Database = Depends(get_pg)):
-#     print(db)
-#     print(Price)
-#     query = select(Product)
-#     res = await db.fetch_all(query)
-#     print(list(res[0].keys()))
-#     print(list(res[0].values()))
-#     price = Price()
-#     price.id='f0508592-262e-425b-b1cd-57828ebd98c4'
-#     price.stripe_product_id='f0508592-262e-425b-b1cd-57828ebd97c4'
-#     price.name='tttttt'
-#     price.description='tttttt'
-#     print(insert(Price))
-#     # db.execute(insert(price))
-#     # prod = Product(id=)
-#     return {"message": "Hello World1"}
