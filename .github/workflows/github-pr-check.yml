@@ -30,10 +30,10 @@ jobs:
           mkdir -p lint_report/billing_service/src/mypy/
       - name: mypy
         run: |
-          mypy --html-report lint_report/billing_service/src/mypy/ src/app* || true
+          mypy --html-report lint_report/billing_service/src/mypy/ src/* || true
       - name: lint-codestyle
         run: |
-          flake8 src/app --exit-zero --format=html --htmldir=lint_report/billing_service/src/styleguide/
+          flake8 src --exit-zero --format=html --htmldir=lint_report/billing_service/src/styleguide/
       - name: load-report
         uses: actions/upload-artifact@v3.1.0
         with:
