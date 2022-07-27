@@ -2,13 +2,13 @@ import uuid
 from datetime import datetime
 from functools import lru_cache
 
-import stripe
 from databases import Database
 from fastapi import Depends
-from sqlalchemy import select, insert, update, delete, and_
+from sqlalchemy import select, insert, update, and_
 
 from core.config import Settings
 from core.db import get_pg
+from core.stripe_config import get_stripe
 from db.sql_model import Product as Product_sql
 from models.products import Product
 
@@ -16,11 +16,12 @@ settings = Settings()
 
 
 class ProductService:
-    def __init__(self, db: Database):
+    def __init__(self, db: Database, stripe_loc):
         self.db = db
+        self.stripe = stripe_loc
 
     async def get_all(self):
-        query = select(Product_sql).where(Product_sql.active==True)
+        query = select(Product_sql).where(Product_sql.active == True)
         result = await self.db.fetch_all(query)
         products = None
         if result:
@@ -58,8 +59,7 @@ class ProductService:
 
     async def create(self, name: str):
 
-        stripe.api_key = settings.stripe_key
-        product_new = stripe.Product.create(name=name)
+        product_new = self.stripe.Product.create(name=name)
 
         new_id = uuid.uuid4()
         product = Product(
@@ -77,8 +77,7 @@ class ProductService:
 
     async def edit(self, uuid, name):
         product_old = await self.get_one(uuid)
-        stripe.api_key = settings.stripe_key
-        result = stripe.Product.modify(
+        result = self.stripe.Product.modify(
             product_old.stripe_product_id,
             name=name,
         )
@@ -89,8 +88,7 @@ class ProductService:
 
     async def delete(self, uuid):
         product_old = await self.get_one(uuid)
-        stripe.api_key = settings.stripe_key
-        result = stripe.Product.modify(
+        result = self.stripe.Product.modify(
             product_old.stripe_product_id,
             active=False,
         )
@@ -101,5 +99,6 @@ class ProductService:
 @lru_cache()
 def get_products_service(
         db: Database = Depends(get_pg),
+        stripe_loc=Depends(get_stripe)
 ) -> ProductService:
-    return ProductService(db)
+    return ProductService(db, stripe_loc)
