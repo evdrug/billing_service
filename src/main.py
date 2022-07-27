@@ -68,5 +68,6 @@ async def shutdown():
 #     await grpc_init.grpc_auth.close()
 #
 
+
 app.include_router(products.router, prefix='/api/v1/products')
 app.include_router(prices.router, prefix='/api/v1/prices')
