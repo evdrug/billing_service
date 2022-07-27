@@ -1,0 +1,41 @@
+name: Linter check
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.8", "3.9", "3.10" ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: install-dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy lxml wemake-python-styleguide flake8-html
+      - name: make-linter-report-directory
+        run: |
+          mkdir -p lint_report/billing_service/src/styleguide/
+          mkdir -p lint_report/billing_service/src/mypy/
+      - name: mypy
+        run: |
+          mypy --html-report lint_report/billing_service/src/mypy/ src/app* || true
+      - name: lint-codestyle
+        run: |
+          flake8 src/app --exit-zero --format=html --htmldir=lint_report/billing_service/src/styleguide/
+      - name: load-report
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: lint_report
+          path: lint_report/
