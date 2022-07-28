@@ -3,7 +3,6 @@ from functools import lru_cache
 from http import HTTPStatus
 from uuid import UUID
 
-import stripe
 from databases import Database
 from fastapi import Depends
 from fastapi import HTTPException
@@ -11,6 +10,7 @@ from sqlalchemy import select, and_
 
 from core.config import Settings
 from core.db import get_pg
+from core.stripe_config import get_stripe
 from db.sql_model import (
     BillingHistory as BillingHistoryTable,
     StripeCustomer as StripeCustomerTable,
@@ -23,8 +23,9 @@ settings = Settings()
 
 
 class BillingHistoryService:
-    def __init__(self, db: Database):
+    def __init__(self, db: Database, stripe_loc):
         self.db = db
+        self.stripe = stripe_loc
 
     async def get_user_history(self, uuid: UUID):
         query = select([
@@ -65,13 +66,13 @@ class BillingHistoryService:
         ]).where(
             StripeCustomerTable.user_id == uuid
         )
-        stripe.api_key = settings.stripe_key
+        self.stripe.api_key = settings.stripe_key
         stripe_customer = await self.db.fetch_one(query)
         data_dict = {
             'customer': stripe_customer.stripe_customer_id,
             'status': 'all'
         }
-        subscriptions = stripe.Subscription.list(**data_dict)
+        subscriptions = self.stripe.Subscription.list(**data_dict)
 
         result = []
         for subscription in subscriptions.data:
@@ -109,7 +110,7 @@ class BillingHistoryService:
     async def update_user_subscriptions(
             self, user_uuid: UUID, price_uuid: UUID, subscription_id: str
     ):
-        stripe.api_key = settings.stripe_key
+        self.stripe.api_key = settings.stripe_key
         query_check = select(
             BillingHistoryTable.id,
             ).join(
@@ -130,7 +131,7 @@ class BillingHistoryService:
                 status_code=HTTPStatus.BAD_REQUEST,
                 detail='This user did not have the specified subscription.'
             )
-        subscription = stripe.Subscription.retrieve(subscription_id)
+        subscription = self.stripe.Subscription.retrieve(subscription_id)
         query = select(
             PriceTable.stripe_price_id
         ).where(
@@ -138,7 +139,7 @@ class BillingHistoryService:
         )
         stripe_price = await self.db.fetch_one(query)
 
-        stripe.Subscription.modify(
+        self.stripe.Subscription.modify(
             subscription.id,
             cancel_at_period_end=False,
             proration_behavior='always_invoice',
@@ -153,5 +154,6 @@ class BillingHistoryService:
 @lru_cache()
 def get_billing_history_service(
         db: Database = Depends(get_pg),
+        stripe_loc=Depends(get_stripe)
 ) -> BillingHistoryService:
-    return BillingHistoryService(db)
+    return BillingHistoryService(db, stripe_loc)
