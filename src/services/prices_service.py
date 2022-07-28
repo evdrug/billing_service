@@ -2,13 +2,13 @@ import uuid
 from functools import lru_cache
 from typing import Optional
 
-import stripe
 from databases import Database
 from fastapi import Depends
 from sqlalchemy import select, insert, update, and_
 
 from core.config import Settings
 from core.db import get_pg
+from core.stripe_config import get_stripe
 from db.sql_model import Price as PriceSql
 from models.prices import TypePrice, Price, TypeRecurring
 from services.products_service import ProductService, get_products_service
@@ -17,9 +17,10 @@ settings = Settings()
 
 
 class PriceService:
-    def __init__(self, db: Database, products_service: ProductService):
+    def __init__(self, db: Database, products_service: ProductService, stripe_loc):
         self.db = db
         self.products_service = products_service
+        self.stripe = stripe_loc
 
     async def get_all_in_product(self, uuid):
         product = await self.products_service.get_one(uuid)
@@ -53,7 +54,6 @@ class PriceService:
     ):
         product = await self.products_service.get_one(product_id)
 
-        stripe.api_key = settings.stripe_key
         new_id = uuid.uuid4()
         price = Price(
             id=new_id,
@@ -71,7 +71,7 @@ class PriceService:
         )
 
         # Todo проверить на наличие прайса
-        price_new = stripe.Price.create(
+        price_new = self.stripe.Price.create(
             unit_amount=price.unit_amount,
             currency=price.currency,
             recurring={"interval": price.interval, "interval_count": price.interval_count,
@@ -85,23 +85,21 @@ class PriceService:
         await self.db.execute(query)
         return price
 
-    async def edit(self, uuid, name):
-        # Todo надо определиться что можем править
-        # stripe.api_key = settings.stripe_key
-        # stripe.Price.modify(
-        #     uuid,
-        #     metadata={"order_id": "6735"},
-        # )
-        # query = update(PriceSql).where(PriceSql.id == uuid).values(name=name)
-        # await self.db.execute(query)
-        # result = await self.get_one(uuid)
-        # return result
-        pass
+    # async def edit(self, uuid, name):
+    #     # Todo надо определиться что можем править
+    #     price_old = await self.get_one(uuid)
+    #     self.stripe.Price.modify(
+    #         price_old.stripe_price_id,
+    #         name=name,
+    #     )
+    #     query = update(PriceSql).where(PriceSql.id == uuid).values(name=name)
+    #     await self.db.execute(query)
+    #     result = await self.get_one(uuid)
+    #     return result
 
     async def delete(self, uuid):
         price_old = await self.get_one(uuid)
-        stripe.api_key = settings.stripe_key
-        stripe.Price.modify(
+        self.stripe.Price.modify(
             price_old.stripe_price_id,
             active=False,
         )
@@ -112,6 +110,7 @@ class PriceService:
 @lru_cache()
 def get_price_service(
         db: Database = Depends(get_pg),
-        products_service: ProductService = Depends(get_products_service)
+        products_service: ProductService = Depends(get_products_service),
+        stripe_loc=Depends(get_stripe)
 ) -> PriceService:
-    return PriceService(db, products_service)
+    return PriceService(db, products_service, stripe_loc)

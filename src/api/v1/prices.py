@@ -85,22 +85,23 @@ async def get_price_id(
                             detail='PRICE_NOT_FOUND')
     return price
 
+# TODO надо определиться, будем ли что-то править для прайса
 
-@router.put('/{uuid}',
-            response_model=Price,
-            summary='Изменить price',
-            description='Изменить price',
-            tags=['Prices'])
-async def edit_price_id(
-        uuid: UUID,
-        name: str,
-        price_service: PriceService = Depends(get_price_service)
-) -> Price:
-    price = await price_service.edit(uuid, name)
-    if not price:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='PRICE_NOT_FOUND')
-    return price
+# @router.put('/{uuid}',
+#             response_model=Price,
+#             summary='Изменить price',
+#             description='Изменить price',
+#             tags=['Prices'])
+# async def edit_price_id(
+#         uuid: UUID,
+#         name: str,
+#         price_service: PriceService = Depends(get_price_service)
+# ) -> Price:
+#     price = await price_service.edit(uuid, name)
+#     if not price:
+#         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
+#                             detail='PRICE_NOT_FOUND')
+#     return price
 
 
 @router.delete('/{uuid}',
