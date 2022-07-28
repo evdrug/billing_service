@@ -1,16 +1,19 @@
+from datetime import datetime
 from functools import lru_cache
 from uuid import UUID
 
 from databases import Database
 from fastapi import Depends
 from sqlalchemy import select, and_
+import stripe
 
 from core.config import Settings
 from core.db import get_pg
 from db.sql_model import (
     BillingHistory as BillingHistoryTable,
     StripeCustomer as StripeCustomerTable,
-    Price as PriceTable
+    Price as PriceTable,
+    Product as ProductTable,
 )
 from models.history import BillingHistory, UserSubscriptions
 
@@ -56,29 +59,47 @@ class BillingHistoryService:
 
     async def get_user_subscriptions(self, uuid: UUID):
         query = select([
-            BillingHistoryTable.id,
-            BillingHistoryTable.created_at,
-            PriceTable.name,
-            BillingHistoryTable.stripe_subscription_id,
-        ]).join(
-            StripeCustomerTable, isouter=True
-        ).where(
-            and_(StripeCustomerTable.user_id == uuid,
-                 BillingHistoryTable.subscription_status == 'active')
-        ).order_by(
-            BillingHistoryTable.created_at.desc()
+            StripeCustomerTable.stripe_customer_id,
+        ]).where(
+            StripeCustomerTable.user_id == uuid
         )
+        stripe.api_key = settings.stripe_key
+        stripe_customer = await self.db.fetch_one(query)
+        data_dict = {
+            'customer': stripe_customer.stripe_customer_id,
+            'status': 'all'
+        }
+        subscriptions = stripe.Subscription.list(**data_dict)
 
-        result = await self.db.fetch_all(query)
-        history = None
-        if result:
-            history = [UserSubscriptions(
-                id=item.id,
-                created_at=item.created_at,
-                subscription=item.name,
-                subscription_id=item.stripe_subscription_id
-            ) for item in result]
-        return history
+        result = []
+        for subscription in subscriptions.data:
+            if subscription.status in ['active', 'trialing', 'canceled', 'ended']:
+                start_date = datetime.fromtimestamp(subscription.current_period_start).date()
+                ended_at = subscription.ended_at if subscription.ended_at else subscription.current_period_end
+                end_date = datetime.fromtimestamp(ended_at).date()
+                price_id = subscription.plan.id
+                query = select([
+                    PriceTable.id,
+                    PriceTable.name,
+                    ProductTable.name,
+                ]).join(
+                    ProductTable, isouter=True
+                ).where(
+                    PriceTable.stripe_product_id == price_id # todo price_id
+                )
+                query_res = await self.db.fetch_one(query)
+                result.append(UserSubscriptions(
+                    status=subscription.status,
+                    start_date=start_date,
+                    end_date=end_date,
+                    price_id=query_res.id if query_res else None,
+                    price_name=query_res.name if query_res else None,
+                    product_name=query_res.name if query_res else None,
+                ))
+        return result
+
+    # async def update_user_subscriptions(self, user_uuid: UUID, price_uuid: UUID):
+    #     stripe.api_key = settings.stripe_key
 
 
 @lru_cache()
