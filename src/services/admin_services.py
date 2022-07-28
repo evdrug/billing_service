@@ -66,7 +66,6 @@ class BillingHistoryService:
         ]).where(
             StripeCustomerTable.user_id == uuid
         )
-        self.stripe.api_key = settings.stripe_key
         stripe_customer = await self.db.fetch_one(query)
         data_dict = {
             'customer': stripe_customer.stripe_customer_id,
@@ -110,7 +109,6 @@ class BillingHistoryService:
     async def update_user_subscriptions(
             self, user_uuid: UUID, price_uuid: UUID, subscription_id: str
     ):
-        self.stripe.api_key = settings.stripe_key
         query_check = select(
             BillingHistoryTable.id,
             ).join(
