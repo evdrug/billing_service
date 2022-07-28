@@ -1,11 +1,13 @@
 from datetime import datetime
 from functools import lru_cache
+from http import HTTPStatus
 from uuid import UUID
 
+import stripe
 from databases import Database
 from fastapi import Depends
+from fastapi import HTTPException
 from sqlalchemy import select, and_
-import stripe
 
 from core.config import Settings
 from core.db import get_pg
@@ -73,9 +75,14 @@ class BillingHistoryService:
 
         result = []
         for subscription in subscriptions.data:
-            if subscription.status in ['active', 'trialing', 'canceled', 'ended']:
-                start_date = datetime.fromtimestamp(subscription.current_period_start).date()
-                ended_at = subscription.ended_at if subscription.ended_at else subscription.current_period_end
+            if subscription.status in ['active', 'trialing',
+                                       'canceled', 'ended']:
+                start_date = datetime.fromtimestamp(
+                    subscription.current_period_start
+                ).date()
+                ended_at = (subscription.ended_at
+                            if subscription.ended_at
+                            else subscription.current_period_end)
                 end_date = datetime.fromtimestamp(ended_at).date()
                 price_id = subscription.plan.id
                 query = select([
@@ -85,21 +92,62 @@ class BillingHistoryService:
                 ]).join(
                     ProductTable, isouter=True
                 ).where(
-                    PriceTable.stripe_product_id == price_id # todo price_id
+                    PriceTable.stripe_price_id == price_id
                 )
                 query_res = await self.db.fetch_one(query)
                 result.append(UserSubscriptions(
                     status=subscription.status,
                     start_date=start_date,
                     end_date=end_date,
+                    subscription_id=subscription.id,
                     price_id=query_res.id if query_res else None,
                     price_name=query_res.name if query_res else None,
                     product_name=query_res.name if query_res else None,
                 ))
         return result
 
-    # async def update_user_subscriptions(self, user_uuid: UUID, price_uuid: UUID):
-    #     stripe.api_key = settings.stripe_key
+    async def update_user_subscriptions(
+            self, user_uuid: UUID, price_uuid: UUID, subscription_id: str
+    ):
+        stripe.api_key = settings.stripe_key
+        query_check = select(
+            BillingHistoryTable.id,
+            ).join(
+           StripeCustomerTable, isouter=True
+        ).where(
+            and_(
+                StripeCustomerTable.user_id == user_uuid,
+                BillingHistoryTable.stripe_subscription_id == subscription_id,
+                BillingHistoryTable.subscription_status == 'active'
+            )
+        ).order_by(
+            BillingHistoryTable.created_at.desc()
+        )
+        user_history = await self.db.fetch_one(query_check)
+
+        if not user_history:
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail='This user did not have the specified subscription.'
+            )
+        subscription = stripe.Subscription.retrieve(subscription_id)
+        query = select(
+            PriceTable.stripe_price_id
+        ).where(
+            PriceTable.id == price_uuid
+        )
+        stripe_price = await self.db.fetch_one(query)
+
+        stripe.Subscription.modify(
+            subscription.id,
+            cancel_at_period_end=False,
+            proration_behavior='always_invoice',
+            items=[{
+                'id': subscription['items']['data'][0].id,
+                'price': stripe_price.stripe_price_id
+            }]
+        )
+        return 'Subscription change request sent successfully.'
 
 
 @lru_cache()

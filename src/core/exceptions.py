@@ -1,0 +1,2 @@
+class ValidateSubscriptionError(Exception):
+    pass

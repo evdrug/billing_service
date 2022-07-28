@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     db_postgres_port: int = Field(5432, env='POSTGRES_PORT')
     db_postgres_name: str = Field('billing', env='POSTGRES_DB')
 
-    stripe_key: str = 'sk_test_51LPXlHEXqG8Fjhv5HiyGVsz7ULeObB3JKyH0XDpoR35tKBWQ0vrbih4J5ExhE2OH1Sl7D8W0CoFki4JfxqlHM0Sm00kkM070jy'
+    stripe_key: str = Field('', env='STRIPE_KEY')
 
     class Config:
         env_file = ".env"

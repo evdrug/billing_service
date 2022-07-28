@@ -10,6 +10,7 @@ class UserSubscriptions(BaseModel):
     status: str
     start_date: date
     end_date: date
+    subscription_id: str
     price_id: Optional[UUID] = None
     price_name: Optional[str] = None
     product_name: Optional[str] = None
@@ -36,3 +37,9 @@ class BillingHistory(BaseModel):
 
     class Config:
         use_enum_values = True
+
+
+class SubscriptionUpdate(BaseModel):
+    user_uuid: UUID
+    price_uuid: UUID
+    subscription_id: str

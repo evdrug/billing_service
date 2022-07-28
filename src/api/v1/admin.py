@@ -1,9 +1,12 @@
 from typing import List
+from http import HTTPStatus
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
-from models.history import BillingHistory, UserSubscriptions
+from models.history import (
+    BillingHistory, UserSubscriptions, SubscriptionUpdate
+)
 from services.admin_services import (
     BillingHistoryService,
     get_billing_history_service,
@@ -19,9 +22,13 @@ router = APIRouter()
             tags=['Admin'])
 async def get_user_history(
         user_uuid: UUID,
-        product_service: BillingHistoryService = Depends(get_billing_history_service)
+        product_service: BillingHistoryService = Depends(
+            get_billing_history_service
+        )
 ) -> List[BillingHistory]:
-    user_history = await product_service.get_user_history(user_uuid)
+    user_history = await product_service.get_user_history(
+        user_uuid
+    )
     if not user_history:
         return []
     return user_history
@@ -34,9 +41,31 @@ async def get_user_history(
             tags=['Admin'])
 async def get_user_subscriptions(
         user_uuid: UUID,
-        product_service: BillingHistoryService = Depends(get_billing_history_service)
+        product_service: BillingHistoryService = Depends(
+            get_billing_history_service
+        )
 ) -> List[UserSubscriptions]:
-    user_subscriptions = await product_service.get_user_subscriptions(user_uuid)
+    user_subscriptions = await product_service.get_user_subscriptions(
+        user_uuid
+    )
     if not user_subscriptions:
         return []
     return user_subscriptions
+
+
+@router.put('/subscriptions',
+            response_model=str,
+            summary='Изменение подписки пользователя',
+            description='Изменение подписки пользователя',
+            tags=['Admin'])
+async def update_user_subscriptions(
+        item: SubscriptionUpdate,
+        product_service: BillingHistoryService = Depends(
+            get_billing_history_service
+        )
+) -> str:
+    return await product_service.update_user_subscriptions(
+        item.user_uuid,
+        item.price_uuid,
+        item.subscription_id
+    )
