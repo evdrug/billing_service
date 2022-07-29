@@ -1,0 +1,57 @@
+@startgantt
+language ru
+
+
+printscale daily zoom 2
+
+[Обсуждение проекта] lasts 2 days and is colored in Lavender/LightBlue
+[Изучение возможных технологий] lasts 3 days and is colored in Lavender/LightBlue
+[Проработка концепции] lasts 3 days and is colored in Lavender/LightBlue
+[Встреча с экспертом] is colored in Coral/Green
+[Распределение задач] is colored in Lavender/LightBlue
+[Подготовка структуры проекта] lasts 2 days and is colored in Lavender/LightBlue
+[Изучение документации] lasts 3 days and is colored in Lavender/LightBlue
+[Endpoint Product] lasts 1 days and is colored in Lavender/LightBlue
+[Endpoint Price] lasts 1 days and is colored in Lavender/LightBlue
+[Встреча с ревьюером] is colored in Coral/Green
+[Доработка админки] lasts 3 days and is colored in Lavender/LightBlue
+[Создание подписок] lasts 3 days and is colored in Lavender/LightBlue
+[Доработка  Auth] lasts 3 days and is colored in Lavender/LightBlue
+[Сборка всего проекта] is colored in Green/Coral
+[Подготовка к сдаче проекта] lasts 3 days and is colored in LightBlue/Red
+
+
+Project starts 2022-07-07
+
+[Обсуждение проекта] starts 2022-07-07
+[Изучение возможных технологий] starts 2022-07-09
+[Проработка концепции] starts 2022-07-12
+[Встреча с экспертом] starts 2022-07-15
+[Распределение задач] starts 2022-07-18
+[Изучение документации] starts 2022-07-20
+[Подготовка структуры проекта] starts 2022-07-19
+[Endpoint Product] starts 2022-07-23
+[Endpoint Price] starts 2022-07-24
+[Встреча с ревьюером] starts 2022-07-25
+[Доработка админки] starts 2022-07-25
+[Создание подписок] starts 2022-07-25
+[Доработка  Auth] starts 2022-07-25
+[Сборка всего проекта] starts 2022-07-28
+[Подготовка к сдаче проекта] starts 2022-07-29
+
+'[Обсуждение проекта] lasts 2 days  and is colored in Lavender/LightBlue
+''[Изучение возможных технологий] lasts 2 days and is colored in Lavender/LightBlue
+'
+'Project starts 2022-07-07
+'[Обсуждение проекта] starts 2020-07-07
+'[Изучение возможных технологий] starts 2020-07-10
+'[Встреча с экспертом] lasts 1 days and is colored in Coral/Green and starts 0 days after [lessen]'s end
+
+
+
+'[Тест прототипа] lasts 9 days and is colored in Coral/Green and starts 3 days after [Разработка прототипа]'s end
+'[Составление тестов] lasts 5 days and ends at [Разработка прототипа]'s end
+'[Найм тестировщиков] lasts 6 days and ends at [Составление тестов]'s start
+'[Подготовка отчета о тестировании] is colored in Coral/Green
+'[Подготовка отчета о тестировании] starts 1 day before [Тест прототипа]'s start and ends at [Тест прототипа]'s end
+@endgantt
