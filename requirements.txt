@@ -9,3 +9,4 @@ orjson==3.6.7
 python-dotenv==0.20.0
 alembic==1.8.1
 stripe==3.5.0
+Jinja2==3.0.3

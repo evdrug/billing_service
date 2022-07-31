@@ -44,13 +44,12 @@ class PriceService:
             self,
             name: str,
             product_id: str,
-            permission_id: str,
+            permission_id: int,
             unit_amount: int, currency: str,
             interval: str,
             interval_count: int,
             type_price: TypePrice,
             using_type: TypeRecurring
-
     ):
         product = await self.products_service.get_one(product_id)
 
