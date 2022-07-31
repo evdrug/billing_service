@@ -1,26 +1,20 @@
-import os
 import uuid
-
-import stripe
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-
 from typing import Optional
 
+import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from starlette import status
 from starlette.responses import RedirectResponse, Response
 
-from core.config import Settings
+from core.config import Settings, STATIC_DIR
 from grpc_auth_client.dependencies import get_user_id
 from services.products_service import ProductService, get_products_service
 from services.subscription_service import SubscriptionService, get_subscription_service
 from services.webhook_service import WebhookSubscriptionService, get_webhook_service
 
-static_dir = str(os.path.abspath(os.path.join(
-    __file__, "../../../", 'static/')))
-
-templates = Jinja2Templates(directory=static_dir)
+templates = Jinja2Templates(directory=STATIC_DIR)
 router = APIRouter()
 settings = Settings()
 stripe.api_key = settings.stripe_key
@@ -31,10 +25,10 @@ stripe.api_key = settings.stripe_key
     response_class=HTMLResponse,
 )
 async def index(
-    request: Request,
-    product_service: ProductService = Depends(get_products_service),
-    subscription_service: SubscriptionService = Depends(get_subscription_service),
-    user_id: uuid.UUID = Depends(get_user_id),
+        request: Request,
+        product_service: ProductService = Depends(get_products_service),
+        subscription_service: SubscriptionService = Depends(get_subscription_service),
+        user_id: uuid.UUID = Depends(get_user_id),
 ):
     """Start page endpoint for subscriptions."""
     customer = await subscription_service.check_user_has_subscription(user_id)
@@ -60,7 +54,7 @@ async def index(
 
 @router.get('/checkout-session', response_model=stripe.checkout.Session)
 async def get_checkout_session(
-    sessionId: str,
+        sessionId: str,
 ):
     stripe.api_key = settings.stripe_key
     id = sessionId
@@ -80,9 +74,9 @@ async def success_payment(request: Request, session_id: str):
 
 @router.post('/create-checkout-session')
 async def create_checkout_session(
-    product_id: str,
-    user_id: str,
-    subscription_service: SubscriptionService = Depends(get_subscription_service),
+        product_id: str,
+        user_id: str,
+        subscription_service: SubscriptionService = Depends(get_subscription_service),
 ):
     try:
         checkout_session = await subscription_service.create_subscription_session(user_id, product_id)
@@ -96,7 +90,6 @@ async def create_checkout_session(
 
 @router.post('/create-customer-portal-session')
 async def customer_portal_user(customer_id: str):
-
     session = stripe.billing_portal.Session.create(
         customer=customer_id,
         return_url='https://www.kinopoisk.ru/',
@@ -127,9 +120,9 @@ async def customer_portal_session(session_id: str):
 
 @router.post('/webhook')
 async def webhook_received(
-    request: Request,
-    stripe_signature: Optional[str] = Header(None),
-    webhook_service: WebhookSubscriptionService = Depends(get_webhook_service),
+        request: Request,
+        stripe_signature: Optional[str] = Header(None),
+        webhook_service: WebhookSubscriptionService = Depends(get_webhook_service),
 ):
     webhook_secret = settings.stripe_webhook_secret
     request_data = await request.body()

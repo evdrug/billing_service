@@ -1,19 +1,17 @@
+import grpc
 import uvicorn
-
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
-
-import grpc
 from starlette.staticfiles import StaticFiles
 
 from api.v1 import products, subscription, prices
 from core import db
-from core.config import Settings
-from core.db import db_init
 from core import stripe_config
+from core.config import Settings, STATIC_DIR
+from core.db import db_init
 from core.stripe_config import stripe_init
-from grpc_auth_client.protos import auth_pb2_grpc
 from grpc_auth_client import client
+from grpc_auth_client.protos import auth_pb2_grpc
 
 settings = Settings()
 
@@ -49,7 +47,7 @@ async def shutdown():
 app.include_router(products.router, prefix='/api/v1/products')
 app.include_router(prices.router, prefix='/api/v1/prices')
 app.include_router(subscription.router, prefix='/api/v1/subscription')
-app.mount("/static", StaticFiles(directory=subscription.static_dir), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 if __name__ == '__main__':
     uvicorn.run(
