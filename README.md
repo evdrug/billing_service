@@ -1,12 +1,25 @@
-# billing_service
+# Биллинг онлайн-кинотеатра
+## Описание
+Проект позволяет:
+- покупать подписки
+- управлять подписками
+- смотреть историю операций и подписок
 
-Создать миграцию
-```
-alembic revision --autogenerate -m 'init'
-```
+## Технологии
+- Python 3.9 
+- FastAPI 0.79.0
+- Postgres 13
+- Stripe 3.5
+
+## Запуск проекта
+1) Поднятие docker контейнеров `docker-compose up -d`
+2) Запуск миграций БД `docker-compose exec api_bill alembic upgrade head  `
+
+## Создание миграции
+Создание файла миграции: `alembic revision --autogenerate -m <migration_name>`
+
+### После запуска кода документацию по API можно посмотреть по ссылке: http://localhost/api/openapi
 
 
-Применить миграцию
-```
-alembic upgrade head   
-```
+## Авторы
+Евгений Друзьякин, Дмитрий Вохмин, Евгений Смирнов, Анастасия Еременко

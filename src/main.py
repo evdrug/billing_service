@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from starlette.staticfiles import StaticFiles
 
-from api.v1 import products, subscription, prices
+from api.v1 import products, subscription, prices, admin
 from core import db
 from core import stripe_config
 from core.config import Settings, STATIC_DIR
@@ -46,6 +46,7 @@ async def shutdown():
 
 app.include_router(products.router, prefix='/api/v1/products')
 app.include_router(prices.router, prefix='/api/v1/prices')
+app.include_router(admin.router, prefix='/api/v1/admin')
 app.include_router(subscription.router, prefix='/api/v1/subscription')
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
