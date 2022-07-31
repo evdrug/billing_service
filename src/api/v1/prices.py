@@ -79,7 +79,7 @@ async def create_price(
 async def get_price_id(
         uuid: UUID,
         price_service: PriceService = Depends(get_price_service),
-        # permissions=Depends(get_permissions)
+        permissions=Depends(get_permissions)
 ) -> Price:
     price = await price_service.get_one(uuid)
     if not price:
@@ -107,8 +107,8 @@ async def get_price_id(
 
 
 @router.delete('/{uuid}',
-               summary='Удалить продукт',
-               description='Удалить продукт',
+               summary='Удалить Price',
+               description='Удалить Price',
                tags=['Prices'])
 async def delete_product_id(
         uuid: UUID,
