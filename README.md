@@ -5,7 +5,6 @@
 - управлять подписками
 - смотреть историю операций и подписок
 
-После запуска кода документацию по API можно посмотреть по ссылке: http://localhost/api/openapi
 
 ## Технологии
 - Python 3.9 
@@ -14,11 +13,14 @@
 - Stripe 3.5
 
 ## Запуск проекта
-1) Поднятие docker контейнеров `docker-compose up`
-2) Запуск миграций БД `alembic upgrade head  `
+1) Поднятие docker контейнеров `docker-compose up -d`
+2) Запуск миграций БД `docker-compose exec api_bill alembic upgrade head  `
 
-## Миграции
+## Создание миграции
 Создание файла миграции: `alembic revision --autogenerate -m <migration_name>`
+
+### После запуска кода документацию по API можно посмотреть по ссылке: http://localhost/api/openapi
+
 
 ## Авторы
 Евгений Друзьякин, Дмитрий Вохмин, Евгений Смирнов, Анастасия Еременко
