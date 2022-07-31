@@ -2,7 +2,7 @@
 
 Создать миграцию
 ```
-lembic revision --autogenerate -m 'init'
+alembic revision --autogenerate -m 'init'
 ```
 
 

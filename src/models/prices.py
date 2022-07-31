@@ -24,7 +24,7 @@ class Price(BaseModel):
     type: str
     unit_amount: int
     currency: str
-    permission_id: UUID
+    permission_id: int
     product_id: UUID
     stripe_price_id: Optional[str]
     interval: Optional[str]

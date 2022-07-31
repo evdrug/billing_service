@@ -40,7 +40,7 @@ class Interval(Enum):
 async def create_price(
         name: str,
         product_id: UUID,
-        permission_id: UUID,
+        permission_id: int,
         unit_amount: int,
         currency: str,
         type_price: TypePrice = Query(...),
