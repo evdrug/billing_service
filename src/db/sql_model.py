@@ -1,8 +1,7 @@
 import uuid
 from enum import Enum
 
-import sqlalchemy
-from sqlalchemy import Column, ForeignKey, String, DateTime, Integer, Boolean
+from sqlalchemy import Column, ForeignKey, String, DateTime, Integer, Boolean, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.dialects.postgresql import ENUM as pgEnum
@@ -38,7 +37,7 @@ class Price(Base):
     type = Column(String(250), nullable=False)
     unit_amount = Column(Integer, nullable=False)
     currency = Column(String(250), nullable=False)
-    permission_id = Column(UUID, nullable=False)
+    permission_id = Column(Integer, nullable=False)
     product_id = Column(ForeignKey('product.id'), nullable=False)
     interval = Column(String(250), nullable=True)
     interval_count = Column(Integer, nullable=True)
@@ -75,4 +74,4 @@ class BillingHistory(Base):
     subscription_status = Column(pgEnum(SubscriptionStatus), nullable=False)
     event_type = Column(String(50), nullable=False)
     created_at = Column(DateTime(True))
-
+    additional_info = Column(JSON, nullable=True)

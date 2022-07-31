@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 032c3baa75f9
+Revision ID: 14ce4e48b30d
 Revises: 
-Create Date: 2022-07-22 10:07:34.397011
+Create Date: 2022-07-31 12:54:22.191542
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '032c3baa75f9'
+revision = '14ce4e48b30d'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -45,7 +45,7 @@ def upgrade() -> None:
     sa.Column('type', sa.String(length=250), nullable=False),
     sa.Column('unit_amount', sa.Integer(), nullable=False),
     sa.Column('currency', sa.String(length=250), nullable=False),
-    sa.Column('permission_id', postgresql.UUID(), nullable=False),
+    sa.Column('permission_id', sa.Integer(), nullable=False),
     sa.Column('product_id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('interval', sa.String(length=250), nullable=True),
     sa.Column('interval_count', sa.Integer(), nullable=True),
@@ -62,6 +62,7 @@ def upgrade() -> None:
     sa.Column('subscription_status', postgresql.ENUM('incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid', name='subscriptionstatus'), nullable=False),
     sa.Column('event_type', sa.String(length=50), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('additional_info', sa.JSON(), nullable=True),
     sa.ForeignKeyConstraint(['price'], ['price.id'], ),
     sa.ForeignKeyConstraint(['stripe_customer'], ['stripe_customer.id'], ),
     sa.PrimaryKeyConstraint('id'),
