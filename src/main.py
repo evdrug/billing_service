@@ -28,7 +28,7 @@ app = FastAPI(
 )
 
 
-@app.on_event("startup")
+@app.on_event('startup')
 async def startup():
     db.pg = db_init()
     stripe_config.stripe_loc = stripe_init()
@@ -38,7 +38,7 @@ async def startup():
     await db.pg.connect()
 
 
-@app.on_event("shutdown")
+@app.on_event('shutdown')
 async def shutdown():
     await client.channel.close()
     await db.pg.disconnect()
@@ -48,7 +48,7 @@ app.include_router(products.router, prefix='/api/v1/products')
 app.include_router(prices.router, prefix='/api/v1/prices')
 app.include_router(admin.router, prefix='/api/v1/admin')
 app.include_router(subscription.router, prefix='/api/v1/subscription')
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount('/static', StaticFiles(directory=STATIC_DIR), name='static')
 
 if __name__ == '__main__':
     uvicorn.run(

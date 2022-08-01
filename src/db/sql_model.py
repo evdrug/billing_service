@@ -2,10 +2,9 @@ import uuid
 from enum import Enum
 
 from sqlalchemy import Column, ForeignKey, String, DateTime, Integer, Boolean, JSON
+from sqlalchemy.dialects.postgresql import ENUM as pgEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base
-from sqlalchemy.dialects.postgresql import ENUM as pgEnum
-
 
 from core.db import metadata
 
@@ -16,20 +15,20 @@ class Product(Base):
     __tablename__ = 'product'
 
     id = Column(UUID(as_uuid=True), primary_key=True,
-              default=uuid.uuid4, unique=True, nullable=False)
+                default=uuid.uuid4, unique=True, nullable=False)
     stripe_product_id = Column(String(50), nullable=False)
     name = Column(String(250), nullable=False)
     description = Column(String(250), nullable=True)
     created_at = Column(DateTime(True))
     updated_at = Column(DateTime(True))
-    active = Column(Boolean, nullable=False, server_default="true")
+    active = Column(Boolean, nullable=False, server_default='true')
 
 
 class Price(Base):
     __tablename__ = 'price'
 
     id = Column(UUID(as_uuid=True), primary_key=True,
-              default=uuid.uuid4, unique=True, nullable=False)
+                default=uuid.uuid4, unique=True, nullable=False)
     stripe_product_id = Column(String(50), nullable=False)
     stripe_price_id = Column(String(50), nullable=False)
     name = Column(String(250), nullable=False)
@@ -48,7 +47,7 @@ class StripeCustomer(Base):
     __tablename__ = 'stripe_customer'
 
     id = Column(UUID(as_uuid=True), primary_key=True,
-              default=uuid.uuid4, unique=True, nullable=False)
+                default=uuid.uuid4, unique=True, nullable=False)
     user_id = Column(UUID, nullable=False)
     stripe_customer_id = Column(String(50), nullable=False)
 
@@ -67,7 +66,7 @@ class BillingHistory(Base):
     __tablename__ = 'billing_history'
 
     id = Column(UUID(as_uuid=True), primary_key=True,
-              default=uuid.uuid4, unique=True, nullable=False)
+                default=uuid.uuid4, unique=True, nullable=False)
     stripe_customer = Column(ForeignKey('stripe_customer.id'), nullable=False)
     price = Column(ForeignKey('price.id'), nullable=False)
     stripe_subscription_id = Column(String(50), nullable=False)

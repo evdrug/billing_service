@@ -23,13 +23,12 @@ class PriceService:
         self.stripe = stripe_loc
 
     async def get_all_in_product(self, uuid):
-        product = await self.products_service.get_one(uuid)
         query = select(PriceSql).filter(and_(PriceSql.product_id == uuid, PriceSql.active == True))
         result = await self.db.fetch_all(query)
         prices = None
 
         if result:
-            prices = [Price(**dict(zip(list(item.keys()), list(item.values())))) for item in result]
+            prices = [Price.from_orm(item) for item in result]
         return prices
 
     async def get_one(self, uuid: str) -> Optional[Price]:
@@ -37,7 +36,7 @@ class PriceService:
         result = await self.db.fetch_one(query)
         price = None
         if result:
-            price = Price(**dict(zip(list(result.keys()), list(result.values()))))
+            price = Price.from_orm(result)
         return price
 
     async def create(
@@ -73,8 +72,11 @@ class PriceService:
         price_new = self.stripe.Price.create(
             unit_amount=price.unit_amount,
             currency=price.currency,
-            recurring={"interval": price.interval, "interval_count": price.interval_count,
-                       "usage_type": price.using_type},
+            recurring={
+                'interval': price.interval,
+                'interval_count': price.interval_count,
+                'usage_type': price.using_type
+            },
             product=price.stripe_product_id,
         )
 

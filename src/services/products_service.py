@@ -25,15 +25,7 @@ class ProductService:
         result = await self.db.fetch_all(query)
         products = None
         if result:
-            products = [Product(
-                id=item.id,
-                stripe_product_id=item.stripe_product_id,
-                name=item.name,
-                description=item.description,
-                created_at=item.created_at,
-                updated_at=item.updated_at,
-                active=item.active
-            ) for item in result]
+            products = [Product.from_orm(item) for item in result]
         return products
 
     async def get_one(self, uuid: str):
@@ -41,19 +33,13 @@ class ProductService:
         result = await self.db.fetch_one(query)
         product = None
         if result:
-            product = Product(
-                id=result.id,
-                stripe_product_id=result.stripe_product_id,
-                name=result.name,
-                description=result.description,
-                created_at=result.created_at,
-                updated_at=result.updated_at,
-                active=result.active
-            )
+            product = Product.from_orm(result)
         return product
 
     async def check_product(self, name):
-        query = select(Product_sql).filter(and_(Product_sql.name == name, Product_sql.active == True))
+        query = select(Product_sql).filter(
+            and_(Product_sql.name == name, Product_sql.active == True)
+        )
         result = await self.db.fetch_one(query)
         return result
 
@@ -77,7 +63,7 @@ class ProductService:
 
     async def edit(self, uuid, name):
         product_old = await self.get_one(uuid)
-        result = self.stripe.Product.modify(
+        self.stripe.Product.modify(
             product_old.stripe_product_id,
             name=name,
         )
@@ -88,7 +74,7 @@ class ProductService:
 
     async def delete(self, uuid):
         product_old = await self.get_one(uuid)
-        result = self.stripe.Product.modify(
+        self.stripe.Product.modify(
             product_old.stripe_product_id,
             active=False,
         )

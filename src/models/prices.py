@@ -1,4 +1,3 @@
-from datetime import datetime
 from enum import Enum
 from typing import Optional
 from uuid import UUID
@@ -31,5 +30,5 @@ class Price(BaseModel):
     interval_count: Optional[int]
     using_type: Optional[str]
 
-
-
+    class Config:
+        orm_mode = True

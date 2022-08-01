@@ -1,8 +1,7 @@
 from typing import List
-from http import HTTPStatus
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from models.history import (
     BillingHistory, UserSubscriptions, SubscriptionUpdate
@@ -13,6 +12,7 @@ from services.admin_services import (
 )
 
 router = APIRouter()
+
 
 # todo проверить токен на право админа
 @router.get('/billing-history/{user_uuid}',

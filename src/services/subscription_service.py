@@ -59,17 +59,17 @@ class SubscriptionService:
         domain_url = settings.subscription_url
 
         session_params = {
-            "success_url": domain_url + '/success?session_id={CHECKOUT_SESSION_ID}',
-            "cancel_url": domain_url + '/canceled',
-            "payment_method_types": ['card'],
-            "mode": 'subscription',
-            "line_items": price_items,
-            "metadata": {
-                "user_id": user_id,
+            'success_url': domain_url + '/success?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url': domain_url + '/canceled',
+            'payment_method_types': ['card'],
+            'mode': 'subscription',
+            'line_items': price_items,
+            'metadata': {
+                'user_id': user_id,
             }
         }
         if customer:
-            session_params["customer"] = customer.stripe_customer_id
+            session_params['customer'] = customer.stripe_customer_id
 
         checkout_session = self.stripe.checkout.Session.create(**session_params)
         return checkout_session

@@ -9,6 +9,7 @@ from starlette import status
 from starlette.responses import RedirectResponse, Response
 
 from core.config import Settings, STATIC_DIR
+from core.message_constants import WH_NOT_VERIFIED, SUCCESS
 from grpc_auth_client.dependencies import get_user_id
 from services.products_service import ProductService, get_products_service
 from services.subscription_service import SubscriptionService, get_subscription_service
@@ -36,18 +37,18 @@ async def index(
         return templates.TemplateResponse(
             'index.html',
             {
-                "request": request,
-                "has_subscription": True,
-                "customer_id": customer.stripe_customer_id,
+                'request': request,
+                'has_subscription': True,
+                'customer_id': customer.stripe_customer_id,
             }
         )
     if products := await product_service.get_all():
         return templates.TemplateResponse(
             'index.html',
             {
-                "request": request,
-                "products": products,
-                "user_id": user_id,
+                'request': request,
+                'products': products,
+                'user_id': user_id,
             }
         )
 
@@ -64,12 +65,12 @@ async def get_checkout_session(
 
 @router.get('/canceled', response_class=HTMLResponse)
 async def canceled_payment(request: Request):
-    return templates.TemplateResponse('canceled.html', {"request": request})
+    return templates.TemplateResponse('canceled.html', {'request': request})
 
 
 @router.get('/success', response_class=HTMLResponse)
 async def success_payment(request: Request, session_id: str):
-    return templates.TemplateResponse('success.html', {"request": request, 'session_id': session_id})
+    return templates.TemplateResponse('success.html', {'request': request, 'session_id': session_id})
 
 
 @router.post('/create-checkout-session')
@@ -138,9 +139,8 @@ async def webhook_received(
             )
         except Exception as e:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
-        print(event['type'])
         await webhook_service.handling_event(event)
 
-        return Response("Success", status_code=status.HTTP_200_OK)
+        return Response(SUCCESS, status_code=status.HTTP_200_OK)
 
-    return Response("Webhook signature is not verified.", status_code=status.HTTP_403_FORBIDDEN)
+    return Response(WH_NOT_VERIFIED, status_code=status.HTTP_403_FORBIDDEN)

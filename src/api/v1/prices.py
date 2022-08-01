@@ -5,6 +5,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, HTTPException
 
+from core.message_constants import NOT_DATA_RECURRING, PRICE_NOT_FOUND
 from models.prices import Price, TypeRecurring, TypePrice
 from services.prices_service import get_price_service, PriceService
 from grpc_auth_client.dependencies import get_permissions
@@ -53,7 +54,7 @@ async def create_price(
 
     if type_price == TypePrice.recurring and not any([interval_count, interval, using_type]):
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
-                            detail='Not Data Recurring')
+                            detail=NOT_DATA_RECURRING)
 
     price = await price_service.create(
         name,
@@ -67,7 +68,7 @@ async def create_price(
     )
     if not price:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='PRICE_NOT_FOUND')
+                            detail=PRICE_NOT_FOUND)
     return price
 
 
@@ -84,7 +85,7 @@ async def get_price_id(
     price = await price_service.get_one(uuid)
     if not price:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='PRICE_NOT_FOUND')
+                            detail=PRICE_NOT_FOUND)
     return price
 
 # TODO надо определиться, будем ли что-то править для прайса
@@ -114,6 +115,6 @@ async def delete_product_id(
         uuid: UUID,
         price_service: PriceService = Depends(get_price_service)
 ) -> None:
-    price = await price_service.delete(uuid)
+    await price_service.delete(uuid)
 
     return HTTPStatus.NO_CONTENT

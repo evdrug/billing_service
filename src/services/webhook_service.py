@@ -37,7 +37,7 @@ class WebhookSubscriptionService:
 
     async def _customer_created_event(self, data: dict):
         """Map user_id with stripe customer if not exists."""
-        customer_id = data['object'].get("customer")
+        customer_id = data['object'].get('customer')
         user_id = data['object']['metadata'].get('user_id')
         get_user_query = select(customer_table).where(customer_table.stripe_customer_id == customer_id)
         if result := await self.db.fetch_one(get_user_query):
@@ -83,9 +83,9 @@ class WebhookSubscriptionService:
 
         if success_paid and subscription['status'] == SubscriptionStatus.active.value:
             data_to_auth = {
-                "user_id": str(user_customer.user_id),
-                "permission_id": 1,
-                "paid_to_date": paid_to_date,
+                'user_id': str(user_customer.user_id),
+                'permission_id': 1,
+                'paid_to_date': paid_to_date,
             }
             # TODO Move to different service, think about exceptions
             response = requests.post(
