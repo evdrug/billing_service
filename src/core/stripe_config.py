@@ -1,5 +1,3 @@
-from typing import Optional
-
 import stripe
 
 from core.config import Settings

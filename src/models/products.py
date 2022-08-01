@@ -13,3 +13,6 @@ class Product(BaseModel):
     created_at: datetime
     updated_at: datetime
     active: bool
+
+    class Config:
+        orm_mode = True

@@ -12,12 +12,14 @@ class Settings(BaseSettings):
     auth_grpc_port: int = Field(50051, env='AUTH_GRPC_PORT')
 
     db_postgres_host: str = Field('localhost', env='POSTGRES_HOST')
-    db_postgres_user: str = Field('postgres', env='POSTGRES_USER')
-    db_postgres_password: str = Field('12345', env='POSTGRES_PASSWORD')
+    db_postgres_user: str = Field('postgres_bill', env='POSTGRES_USER')
+    db_postgres_password: str = Field('postgres_bill', env='POSTGRES_PASSWORD')
     db_postgres_port: int = Field(5432, env='POSTGRES_PORT')
-    db_postgres_name: str = Field('billing', env='POSTGRES_DB')
+    db_postgres_name: str = Field('bill', env='POSTGRES_DB')
 
-    stripe_key: str = Field('', env='STRIPE_KEY')
+    stripe_key: str = Field(
+        'sk_test_51LJIvZL2WckhhXcwi3Rj0gpSLpBO9tS1jXaMdYvwWVgzWAqbc4puXZj5xTL4TdK6GfD0hmCmIt4q77sWOm34d9nU00nuX5ZXSd',
+        env='STRIPE_KEY')
 
     stripe_webhook_secret: str = Field(
         '',
@@ -38,9 +40,8 @@ class Settings(BaseSettings):
         env='AUTH_PATH_URL',
     )
 
-
     class Config:
-        env_file = ".env"
+        env_file = '.env'
 
 
 # Применяем настройки логирования

@@ -4,6 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from core.message_constants import PRODUCT_NOT_FOUND, PRODUCT_ALREADY_EXISTS
 from models.products import Product
 from services.products_service import get_products_service, ProductService
 
@@ -19,7 +20,7 @@ async def get_products(product_service: ProductService = Depends(get_products_se
     products = await product_service.get_all()
     if not products:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='PRODUCT_NOT_FOUND')
+                            detail=PRODUCT_NOT_FOUND)
     return products
 
 
@@ -35,12 +36,12 @@ async def create_products(
     check = await product_service.check_product(name)
     if check:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
-                            detail='PRODUCT_ALREADY_EXISTS')
+                            detail=PRODUCT_ALREADY_EXISTS)
 
     product = await product_service.create(name)
     if not product:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='PRODUCT_NOT_FOUND')
+                            detail=PRODUCT_NOT_FOUND)
     return product
 
 
@@ -56,7 +57,7 @@ async def get_product_id(
     product = await product_service.get_one(uuid)
     if not product:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='PRODUCT_NOT_FOUND')
+                            detail=PRODUCT_NOT_FOUND)
     return product
 
 
@@ -73,7 +74,7 @@ async def edit_product_id(
     product = await product_service.edit(uuid, name)
     if not product:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='PRODUCT_NOT_FOUND')
+                            detail=PRODUCT_NOT_FOUND)
     return product
 
 
@@ -85,6 +86,6 @@ async def delete_product_id(
         uuid: UUID,
         product_service: ProductService = Depends(get_products_service)
 ) -> None:
-    product = await product_service.delete(uuid)
+    await product_service.delete(uuid)
 
     return HTTPStatus.NO_CONTENT
