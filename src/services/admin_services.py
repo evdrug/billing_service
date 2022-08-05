@@ -2,6 +2,7 @@ from datetime import datetime
 from functools import lru_cache
 from http import HTTPStatus
 from uuid import UUID
+from functools import wraps
 
 from databases import Database
 from fastapi import Depends
@@ -31,7 +32,8 @@ class BillingHistoryService:
         query = select([
             BillingHistoryTable.id,
             BillingHistoryTable.created_at,
-            PriceTable.name,
+            ProductTable.name,
+            PriceTable.name.label('price'),
             BillingHistoryTable.stripe_subscription_id,
             BillingHistoryTable.subscription_status,
             BillingHistoryTable.event_type,
@@ -40,6 +42,8 @@ class BillingHistoryService:
            StripeCustomerTable, isouter=True
         ).join(
             PriceTable, isouter=True
+        ).join(
+            ProductTable, isouter=True
         ).where(
             StripeCustomerTable.user_id == uuid
         ).order_by(
@@ -52,7 +56,8 @@ class BillingHistoryService:
             history = [BillingHistory(
                 id=item.id,
                 created_at=item.created_at,
-                subscription=item.name,
+                product=item.name,
+                price=item.price,
                 subscription_id=item.stripe_subscription_id,
                 subscription_status=item.subscription_status,
                 event_type=item.event_type,
@@ -67,6 +72,8 @@ class BillingHistoryService:
             StripeCustomerTable.user_id == uuid
         )
         stripe_customer = await self.db.fetch_one(query)
+        if not stripe_customer:
+            return None
         data_dict = {
             'customer': stripe_customer.stripe_customer_id,
             'status': 'all'
@@ -87,7 +94,7 @@ class BillingHistoryService:
                 price_id = subscription.plan.id
                 query = select([
                     PriceTable.id,
-                    PriceTable.name,
+                    PriceTable.name.label('price'),
                     ProductTable.name,
                 ]).join(
                     ProductTable, isouter=True
@@ -101,7 +108,7 @@ class BillingHistoryService:
                     end_date=end_date,
                     subscription_id=subscription.id,
                     price_id=query_res.id if query_res else None,
-                    price_name=query_res.name if query_res else None,
+                    price_name=query_res.price if query_res else None,
                     product_name=query_res.name if query_res else None,
                 ))
         return result
@@ -155,3 +162,17 @@ def get_billing_history_service(
         stripe_loc=Depends(get_stripe)
 ) -> BillingHistoryService:
     return BillingHistoryService(db, stripe_loc)
+
+
+def superuser_required(fn):
+    @wraps(fn)
+    async def wrapper(permissions, *args, **kwargs):
+        if settings.auth_superuser_permission in permissions:
+            return await fn(*args, **kwargs)
+        else:
+            raise HTTPException(
+                status_code=HTTPStatus.FORBIDDEN,
+                detail='This action is only available for superuser.'
+            )
+
+    return wrapper

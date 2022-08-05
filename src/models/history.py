@@ -29,7 +29,8 @@ class SubscriptionStatus(Enum):
 class BillingHistory(BaseModel):
     id: UUID
     created_at: datetime
-    subscription: str
+    product: str
+    price: str
     subscription_id: str
     subscription_status: SubscriptionStatus
     event_type: str
